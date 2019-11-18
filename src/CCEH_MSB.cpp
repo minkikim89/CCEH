@@ -8,6 +8,46 @@
 #include "util/hash.h"
 #include "src/CCEH.h"
 
+void*  cceh_init(PMEMobjpool *p, size_t initCap)
+{
+    pop = p;
+    return new CCEH(initCap);
+}
+
+void  cceh_destroy(void *cceh)
+{
+    CCEH *ch = (CCEH*)cceh;
+}
+
+void  cceh_insert(void *cceh, size_t key, char *value)
+{
+    CCEH *ch = (CCEH*)cceh;
+    ch->Insert(key, value);
+}
+
+char* cceh_get(void *cceh, size_t key)
+{
+    CCEH *ch = (CCEH*)cceh;
+    return (char*)ch->Get(key);
+}
+
+bool  cceh_delete(void *cceh, size_t key)
+{
+    CCEH *ch = (CCEH*)cceh;
+    return ch->Delete(key);
+}
+
+bool  cceh_recovery(void *cceh)
+{
+    CCEH *ch = (CCEH*)cceh;
+    return ch->Recovery();
+}
+
+size_t cceh_hash(const char *key, size_t len)
+{
+    return murmur2(key, len);
+}
+
 extern size_t perfCounter;
 
 int Segment::Insert(Key_t& key, Value_t value, size_t loc, size_t key_hash) {

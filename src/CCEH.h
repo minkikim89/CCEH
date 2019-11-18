@@ -1,11 +1,28 @@
 #ifndef CCEH_H_
 #define CCEH_H_
 
+#ifdef __cplusplus
 #include <cstring>
 #include <cmath>
 #include <vector>
+#include <libpmemobj.h>
 #include "util/pair.h"
 #include "src/hash.h"
+
+PMEMobjpool *pop;
+
+extern "C" {
+#endif
+#include <stdbool.h>
+    void* cceh_init(PMEMobjpool *p, size_t initCap);
+    void  cceh_destroy(void* cceh) ;
+    void  cceh_insert(void *cceh, size_t key, char *value);
+    char* cceh_get(void *cceh, size_t key);
+    bool  cceh_delete(void *cceh, size_t key);
+    bool  cceh_recovery(void *cceh);
+    size_t cceh_hash(const char *key, size_t len);
+#ifdef __cplusplus
+}
 
 constexpr size_t kSegmentBits = 8;
 constexpr size_t kMask = (1 << kSegmentBits)-1;
@@ -30,13 +47,20 @@ struct Segment {
 
   void* operator new(size_t size) {
     void* ret;
-    posix_memalign(&ret, 64, size);
+    //posix_memalign(&ret, 64, size);
+
+    PMEMoid oid;
+    pmemobj_alloc(pop, &oid, size, 0, NULL, NULL);
+    ret = pmemobj_direct(oid);
     return ret;
   }
 
   void* operator new[](size_t size) {
     void* ret;
-    posix_memalign(&ret, 64, size);
+    //posix_memalign(&ret, 64, size);
+    PMEMoid oid;
+    pmemobj_alloc(pop, &oid, size, 0, NULL, NULL);
+    ret = pmemobj_direct(oid);
     return ret;
   }
 
@@ -114,7 +138,10 @@ class CCEH : public Hash {
 
     void* operator new(size_t size) {
       void *ret;
-      posix_memalign(&ret, 64, size);
+      //posix_memalign(&ret, 64, size);
+      PMEMoid oid;
+      pmemobj_alloc(pop, &oid, size, 0, NULL, NULL);
+      ret = pmemobj_direct(oid);
       return ret;
     }
 
@@ -122,5 +149,6 @@ class CCEH : public Hash {
     size_t global_depth;
     Directory* dir;
 };
+#endif
 
 #endif  // EXTENDIBLE_PTR_H_
